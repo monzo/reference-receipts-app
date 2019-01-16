@@ -33,6 +33,7 @@ class OAuth2Client:
     
     def start_auth(self):
         ''' Builds a URL to be used to initiate OAuth2 flow on the OAuth Portal. '''
+        
         oauth2_GET_params = {
             "client_id": config.MONZO_CLIENT_ID,
             "redirect_uri": config.MONZO_OAUTH_REDIRECT_URI,
@@ -47,6 +48,7 @@ class OAuth2Client:
 
     def wait_for_auth_flow(self):
         ''' Parses the temporary authorization code returned from authenticating with Email login link. '''
+        
         callback_url = input("Once done, paste your callback URL here: ").strip()
         try:
             callback = urllib.urlparse(callback_url).query
@@ -67,6 +69,7 @@ class OAuth2Client:
     
     def exchange_auth_code(self):
         '''Exchanges the temporary authorization code with an access token for a non-confidential application. '''
+        
         if self._auth_code == "":
             error("no auth code, have you completed intial auth flow")
 
@@ -126,17 +129,59 @@ class OAuth2Client:
             error("No refresh token returned in token refresh response")
         print("Token refreshed, new access token and refresh token recorded.")
     
-        
-    def test_api_call(self):
-        ''' Use the access token to send a test API call to the Monzo API. '''
-        response = requests.get("https://{}/ping/whoami".format(config.MONZO_API_HOSTNAME), 
-            headers={"Authorization": "Bearer {}".format(self._access_token)})
+
+    def api_get(self, path, params_data):
+        ''' Use the access token to send a GET API call to the Monzo API. '''
+
+        if path.startswith("/"):
+            path = path[1:]
+        response = requests.get("https://{}/{}".format(config.MONZO_API_HOSTNAME, path), 
+            headers={"Authorization": "Bearer {}".format(self._access_token)},
+            params=params_data)
         if response.status_code != 200:
+            return False, response
+
+        return True, response
+
+    
+    def api_post(self, path, params_data):
+        ''' Use the access token to sned a POST API call to the Monzo API. '''
+
+        if path.startswith("/"):
+            path = path[1:]
+        response = requests.post("https://{}/{}".format(config.MONZO_API_HOSTNAME, path), 
+            headers={"Authorization": "Bearer {}".format(self._access_token)},
+            data=params_data)
+        if response.status_code != 200:
+            return False, response
+        
+        return True, response
+    
+    def api_put(self, path, params_data):
+        ''' Use the access token to sned a PUT API call to the Monzo API. '''
+
+        if path.startswith("/"):
+            path = path[1:]
+        response = requests.put("https://{}/{}".format(config.MONZO_API_HOSTNAME, path), 
+            headers={"Authorization": "Bearer {}".format(self._access_token)},
+            data=params_data)
+        if response.status_code != 200:
+            return False, response
+        
+        return True, response
+    
+
+    def test_api_call(self):
+        ''' Send a ping API call to the Monzo API. '''
+
+        success, response = self.api_get("ping/whoami", {})
+        if not success:
             error("API test call failed, bad status code returned: {} ({})".format(response.status_code,
                 response.text))
         
         print("API test call successful.")
-        print(response.text)
+        return response.text
+
 
 if __name__ == "__main__":
     client = OAuth2Client()
