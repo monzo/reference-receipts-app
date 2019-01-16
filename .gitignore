@@ -330,3 +330,7 @@ venv.bak/
 # Goddamn it, macOS.
 .DS_Store
 .vscode
+
+# Application use
+.oauth2_credentials
+config.py
