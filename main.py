@@ -94,15 +94,15 @@ class ReceiptsClient:
         receipt_id = uuid.uuid4().hex
         
         # Price amounts are in the number of pences.
-        example_sub_item_1 = receipt_types.SubItem("Bananas loose", 1.5, "kg", 119, "GBP", 0).data
-        example_sub_item_2 = receipt_types.SubItem("Organic bananas", 1, "kg", 150, "GBP", 0).data
-        example_items = [receipt_types.Item("Selected bananas", 2.5, "kg", 269, "GBP", 0, [example_sub_item_1, example_sub_item_2]).data]
+        example_sub_item_1 = receipt_types.SubItem("Bananas loose", 1.5, "kg", 119, "GBP", 0)
+        example_sub_item_2 = receipt_types.SubItem("Organic bananas", 1, "kg", 150, "GBP", 0)
+        example_items = [receipt_types.Item("Selected bananas", 2.5, "kg", 269, "GBP", 0, [example_sub_item_1, example_sub_item_2])]
         if abs(most_recent_transaction["amount"]) > 269:
-            example_items.append(receipt_types.Item("Excess fare", 1, "", abs(most_recent_transaction["amount"]) - 269, "GBP", 20, []).data)
-        example_payments = [receipt_types.Payment("card", "123321", "1234", "A10B2C", "", "", "", "", abs(most_recent_transaction["amount"]), "GBP").data]
-        example_taxes = [receipt_types.Tax("VAT", 0, "GBP", "12345678").data]
+            example_items.append(receipt_types.Item("Excess fare", 1, "", abs(most_recent_transaction["amount"]) - 269, "GBP", 20, []))
+        example_payments = [receipt_types.Payment("card", "123321", "1234", "A10B2C", "", "", "", "", abs(most_recent_transaction["amount"]), "GBP")]
+        example_taxes = [receipt_types.Tax("VAT", 0, "GBP", "12345678")]
         example_merchant = receipt_types.Merchant("Fruit store", False, "0200000001", "fruit@fruitstore.com", "Fruit Store King's Cross", "King's Cross St Pancras",
-            "N1 9AL").data
+            "N1 9AL")
         
         example_receipt = receipt_types.Receipt("", receipt_id, most_recent_transaction["id"], abs(most_recent_transaction["amount"]), "GBP", example_merchant,
             example_payments, example_taxes, example_items)

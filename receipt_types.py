@@ -3,11 +3,7 @@ from copy import deepcopy
 
 # Implements Receipts API data types.
 
-class Type:
-    def marshal(self):
-        return json.dumps(self.data)
-
-class SubItem(Type):
+class SubItem:
     def __init__(self, description, quantity, unit, amount, currency, tax):
         self.data = {
             "description": description,
@@ -18,7 +14,7 @@ class SubItem(Type):
             "tax": tax,
         }
 
-class Item(Type):
+class Item:
     def __init__(self, description, quantity, unit, amount, currency, tax, sub_items):
         self.data = {
             "description": description,
@@ -27,10 +23,10 @@ class Item(Type):
             "amount": amount,
             "currency": currency,
             "tax": tax,
-            "sub_items": sub_items,
+            "sub_items": [sub.data for sub in sub_items],
         }
 
-class Payment(Type):
+class Payment:
     def __init__(self, type, bin, last_four, auth_code, aid, mid, tid, gift_card_type, amount, currency):
         self.data = {
             "type": type,
@@ -45,7 +41,7 @@ class Payment(Type):
             "currency": currency,
         }
 
-class Tax(Type):
+class Tax:
     def __init__(self, description, amount, currency, tax_number):
         self.data = {
             "description": description,
@@ -54,7 +50,7 @@ class Tax(Type):
             "tax_number": tax_number,
         }
 
-class Merchant(Type):
+class Merchant:
     def __init__(self, name, online, phone, email, store_name, store_address, store_postcode):
         self.data = {
             "name": name,
@@ -67,7 +63,7 @@ class Merchant(Type):
         }
 
 
-class Receipt(Type):
+class Receipt:
     def __init__(self, id, external_id, transaction_id, total, currency, merchant, payments, taxes, items):
         self.data = {
             "id": id, 
@@ -75,11 +71,14 @@ class Receipt(Type):
             "transaction_id": transaction_id,
             "total": total,
             "currency": currency,
-            "merchant": merchant,
-            "payments": payments,
-            "taxes": taxes,
-            "items": items,
+            "merchant": merchant.data,
+            "payments": [payment.data for payment in payments],
+            "taxes": [tax.data for tax in taxes],
+            "items": [item.data for item in items],
         }
+    
+    def marshal(self):
+        return json.dumps(self.data)
 
 
     
