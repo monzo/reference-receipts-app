@@ -3,6 +3,7 @@ import sys, uuid
 import base64
 import urllib.parse as urllib
 import json
+from utils import error
 
 # A very simple OAuth2 client for the Monzo Third Party API. You presently cannot use
 # this API for public applications, as only a small amount of users you nominate can
@@ -14,10 +15,6 @@ try:
 except:
     print("Cannot import config, register your application on developers.monzo.com, \
 copy config-example.py to config.py, and configure your client credentials.")
-    sys.exit(1)
-
-def error(message):
-    print("Error: {}".format(message))
     sys.exit(1)
 
 class OAuth2Client:
