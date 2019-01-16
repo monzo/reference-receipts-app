@@ -83,7 +83,6 @@ class OAuth2Client:
         if "access_token" in response_object:
             print("Auth successful.") 
             self.access_token = response_object["access_token"]
-            self.test_api_call()
     
         
     def test_api_call(self):
@@ -100,3 +99,4 @@ class OAuth2Client:
 if __name__ == "__main__":
     client = OAuth2Client()
     client.start_auth()
+    client.test_api_call()
