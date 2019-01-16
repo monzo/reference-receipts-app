@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 
 # Implements Receipts API data types.
 
@@ -53,8 +54,8 @@ class Tax(Type):
             "tax_number": tax_number,
         }
 
-class Merchant:
-     def __init__(self, name, online, phone, email, store_name, store_address, store_postcode):
+class Merchant(Type):
+    def __init__(self, name, online, phone, email, store_name, store_address, store_postcode):
         self.data = {
             "name": name,
             "online": online,
@@ -80,6 +81,5 @@ class Receipt(Type):
             "items": items,
         }
 
-        
 
     

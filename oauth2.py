@@ -138,10 +138,16 @@ class OAuth2Client:
         response = requests.get("https://{}/{}".format(config.MONZO_API_HOSTNAME, path), 
             headers={"Authorization": "Bearer {}".format(self._access_token)},
             params=params_data)
-        if response.status_code != 200:
-            return False, response
 
-        return True, response
+        try:
+            resp = response.json()
+        except json.decoder.JSONDecodeError:
+            resp = response.text
+
+        if response.status_code != 200:
+            return False, resp
+
+        return True, resp
 
     
     def api_post(self, path, params_data):
@@ -152,10 +158,17 @@ class OAuth2Client:
         response = requests.post("https://{}/{}".format(config.MONZO_API_HOSTNAME, path), 
             headers={"Authorization": "Bearer {}".format(self._access_token)},
             data=params_data)
+
+        try:
+            resp = response.json()
+        except json.decoder.JSONDecodeError:
+            resp = response.text
+
+
         if response.status_code != 200:
-            return False, response
+            return False, resp
         
-        return True, response
+        return True, resp
     
     def api_put(self, path, params_data):
         ''' Use the access token to sned a PUT API call to the Monzo API. '''
@@ -165,10 +178,16 @@ class OAuth2Client:
         response = requests.put("https://{}/{}".format(config.MONZO_API_HOSTNAME, path), 
             headers={"Authorization": "Bearer {}".format(self._access_token)},
             data=params_data)
-        if response.status_code != 200:
-            return False, response
+
+        try:
+            resp = response.json()
+        except json.decoder.JSONDecodeError:
+            resp = response.text
         
-        return True, response
+        if response.status_code != 200:
+            return False, resp
+
+        return True, resp
     
 
     def test_api_call(self):
@@ -177,10 +196,10 @@ class OAuth2Client:
         success, response = self.api_get("ping/whoami", {})
         if not success:
             error("API test call failed, bad status code returned: {} ({})".format(response.status_code,
-                response.text))
+                response))
         
         print("API test call successful.")
-        return response.text
+        return response
 
 
 if __name__ == "__main__":
