@@ -3,13 +3,14 @@ import uuid
 
 import requests
 
+import config
 import oauth2
 import receipt_types
 from utils import error
 
 class ReceiptsClient:
-    ''' An example client of the Monzo Transaction Receipts API. For the underlying
-        OAuth2 implementation, see oauth2.OAuth2Client.
+    ''' An example single-account client of the Monzo Transaction Receipts API. 
+        For the underlying OAuth2 implementation, see oauth2.OAuth2Client.
     '''
 
     def __init__(self):
@@ -125,6 +126,35 @@ class ReceiptsClient:
         print("Successfully uploaded receipt {}: {}".format(receipt_id, response))
         return receipt_id
 
+    
+    def example_register_webhook(self, incoming_endpoint):
+        '''
+        This is an example on registering a webhook with Monzo for Monzo's server to call your own
+        backend service endpoint when certain events happen on an account. This is useful if you 
+        deploy an API client as a backend service with an incoming interface exposed to the internet.
+        Your backend code can then, for example, attach receipts to new transactions in an event-
+        driven manner. For more details, see https://docs.monzo.com/#webhooks
+        '''
+
+        print("Listing webhooks on account")
+        success, response = self._api_client.api_get("webhooks", {
+            "account_id": self._account_id,
+        })
+        if not success:
+            error("Failed to list webhooks: {}".format(response))
+        print("Existing webhooks: ", response)
+
+        print("Registering a webhook with callback URL {} ...".format(incoming_endpoint))
+        success, response = self._api_client.api_post("webhooks", {
+            "account_id": self._account_id,
+            "url": incoming_endpoint,
+        })
+        if not success or "webhook" not in response:
+            error("Failed to register webhook: {}".format(response))
+        print("Successfully registered webhooks ", response)
+
+        return response["webhook"]["id"]
+        
 
 if __name__ == "__main__":
     client = ReceiptsClient()
@@ -132,6 +162,9 @@ if __name__ == "__main__":
     client.list_transactions()
     receipt_id = client.example_add_receipt_data()
     client.read_receipt(receipt_id)
+    client.example_register_webhook("https://example.com/webhook_callback") 
+    # The webhook endpoint used should be an HTTP-style server served by your own app server.
+
     
     
             
