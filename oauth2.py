@@ -1,8 +1,11 @@
-import requests
-import sys, uuid
+import sys
+import uuid
 import base64
 import urllib.parse as urllib
 import json
+
+import requests
+
 from utils import error
 
 # A very simple OAuth2 client for the Monzo Third Party API. You presently cannot use
@@ -24,15 +27,18 @@ class OAuth2Client:
     '''
     
     def __init__(self):
-        self._oauth_state = uuid.uuid4().hex
-        # Cryptographically-secure randomised state protects the client browser 
-        # from cross site forgery attacks, while we don't need it as a command
-        # line application, we still send a randomised state nevertheless to 
-        # demonstrate.
         self._is_confidential_client = config.MONZO_CLIENT_IS_CONFIDENTIAL
+        # Your client should only be confidential if it is a backend application, with
+        # OAuth secret hidden from the user.
+        self._oauth_state = uuid.uuid4().hex
+        # OAuth state uses a randomised alphanumeric state to protect the client  
+        # browser from cross site forgery attacks. While we don't need it as a 
+        # command-line application, we still send a randomised state nevertheless 
+        # to demonstrate.
+        
     
     def start_auth(self):
-        ''' Builds a URL to be used to initiate OAuth2 flow on the OAuth Portal. '''
+        ''' Builds an auth URL to be used to initiate OAuth2 flow on the web OAuth portal. '''
         
         oauth2_GET_params = {
             "client_id": config.MONZO_CLIENT_ID,
@@ -42,20 +48,20 @@ class OAuth2Client:
         }
         request_url = "https://{}/?{}".format(config.MONZO_OAUTH_HOSTNAME,
             urllib.urlencode(oauth2_GET_params, doseq=True))
-        print("Visit {} and follow email flow to obtain your temporary authorization code...".format(request_url))
+        print("Visit {} and follow email received to obtain your temporary authorization code...".format(request_url))
         self.wait_for_auth_flow()
     
 
     def wait_for_auth_flow(self):
         ''' Parses the temporary authorization code returned from authenticating with Email login link. '''
         
-        callback_url = input("Once done, paste your callback URL here: ").strip()
+        callback_url = input("Once you have obtained the callback link by clicking the login button in your email, paste your callback URL here: ").strip()
         try:
             callback = urllib.urlparse(callback_url).query
         except:
             error("cannot parse callback URL, try again.")
 
-        callback_qs = dict(urllib.parse_qsl(callback)) # Annoyingly parse_qs() parses string values into dicts.
+        callback_qs = dict(urllib.parse_qsl(callback))
         if "code" not in callback_qs:
             error("cannot find temporary auth code in callback URL")
         if "state" not in callback_qs:
@@ -68,7 +74,7 @@ class OAuth2Client:
     
     
     def exchange_auth_code(self):
-        '''Exchanges the temporary authorization code with an access token for a non-confidential application. '''
+        '''Exchanges the temporary authorization code with an access token for the application. '''
         
         if self._auth_code == "":
             error("no auth code, have you completed intial auth flow")
@@ -88,7 +94,7 @@ class OAuth2Client:
 
         response_object = response.json()
         if "access_token" in response_object:
-            print("Auth successful.") 
+            print("Auth successful, access token received.") 
             self._access_token = response_object["access_token"]
 
             if "refresh_token" in response_object:
@@ -131,7 +137,7 @@ class OAuth2Client:
     
 
     def api_get(self, path, params_data):
-        ''' Use the access token to send a GET API call to the Monzo API. '''
+        ''' Uses the access token to send a GET API call to the Monzo API. '''
 
         if path.startswith("/"):
             path = path[1:]
@@ -151,7 +157,7 @@ class OAuth2Client:
 
     
     def api_post(self, path, params_data):
-        ''' Use the access token to sned a POST API call to the Monzo API. '''
+        ''' Uses the access token to send a POST API call to the Monzo API. '''
 
         if path.startswith("/"):
             path = path[1:]
@@ -171,7 +177,7 @@ class OAuth2Client:
         return True, resp
     
     def api_put(self, path, params_data):
-        ''' Use the access token to sned a PUT API call to the Monzo API. '''
+        ''' Uses the access token to send a PUT API call to the Monzo API. '''
 
         if path.startswith("/"):
             path = path[1:]
@@ -191,7 +197,7 @@ class OAuth2Client:
     
 
     def test_api_call(self):
-        ''' Send a ping API call to the Monzo API. '''
+        ''' Sends a GET ping API call to the Monzo API to test the auth state. '''
 
         success, response = self.api_get("ping/whoami", {})
         if not success:

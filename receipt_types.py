@@ -1,7 +1,7 @@
 import json
-from copy import deepcopy
 
-# Implements Receipts API data types.
+# Implements the payload protocol for Transaction Receipts API. 
+# See example_add_receipt_data() in main.py for data types example usage.
 
 class SubItem:
     def __init__(self, description, quantity, unit, amount, currency, tax):
