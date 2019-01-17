@@ -50,28 +50,14 @@ class Tax:
             "tax_number": tax_number,
         }
 
-class Merchant:
-    def __init__(self, name, online, phone, email, store_name, store_address, store_postcode):
-        self.data = {
-            "name": name,
-            "online": online,
-            "phone": phone,
-            "email": email,
-            "store_name": store_name,
-            "store_address": store_address,
-            "store_postcode": store_postcode,
-        }
-
-
 class Receipt:
-    def __init__(self, id, external_id, transaction_id, total, currency, merchant, payments, taxes, items):
+    def __init__(self, id, external_id, transaction_id, total, currency, payments, taxes, items):
         self.data = {
             "id": id, 
             "external_id": external_id,
             "transaction_id": transaction_id,
             "total": total,
             "currency": currency,
-            "merchant": merchant.data,
             "payments": [payment.data for payment in payments],
             "taxes": [tax.data for tax in taxes],
             "items": [item.data for item in items],

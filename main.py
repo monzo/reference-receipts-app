@@ -101,10 +101,8 @@ class ReceiptsClient:
             example_items.append(receipt_types.Item("Excess fare", 1, "", abs(most_recent_transaction["amount"]) - 269, "GBP", 20, []))
         example_payments = [receipt_types.Payment("card", "123321", "1234", "A10B2C", "", "", "", "", abs(most_recent_transaction["amount"]), "GBP")]
         example_taxes = [receipt_types.Tax("VAT", 0, "GBP", "12345678")]
-        example_merchant = receipt_types.Merchant("Fruit store", False, "0200000001", "fruit@fruitstore.com", "Fruit Store King's Cross", "King's Cross St Pancras",
-            "N1 9AL")
         
-        example_receipt = receipt_types.Receipt("", receipt_id, most_recent_transaction["id"], abs(most_recent_transaction["amount"]), "GBP", example_merchant,
+        example_receipt = receipt_types.Receipt("", receipt_id, most_recent_transaction["id"], abs(most_recent_transaction["amount"]), "GBP",
             example_payments, example_taxes, example_items)
         example_receipt_marshaled = example_receipt.marshal()
         print(json.dumps(example_receipt_marshaled, indent=4, sort_keys=True))
