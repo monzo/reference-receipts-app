@@ -23,7 +23,9 @@ class ReceiptsClient:
     def do_auth(self):
         ''' Perform OAuth2 flow mostly on command-line and retrieve information of the
             authorised user's current account information, rather than from joint account, 
-            if present.
+            if present. Also waits for user to confirm access to their data in their Monzo
+            app -- this is required for the client to be compliant with Strong Customer
+            Authentication and able to access user data.
         '''
 
         print("Starting OAuth2 flow...")
@@ -37,10 +39,13 @@ class ReceiptsClient:
             error("OAuth2 flow seems to have failed.")
         self._api_client_ready = True
 
+        print("Please open your Monzo app, click \"Allow access to your data\" for your application, and follow the instructions.") 
+        input("Once approved, press [Enter] to continue:")
+
         print("Retrieving account information...")
         success, response = self._api_client.api_get("accounts", {})
         if not success or "accounts" not in response or len(response["accounts"]) < 1:
-            error("Could not retrieve accounts information")
+            error("Could not retrieve accounts information: {}".format(response))
         
         # We will be operating on personal account only.
         for account in response["accounts"]:
@@ -95,7 +100,22 @@ class ReceiptsClient:
         if len(self.transactions) == 0:
             error("No transactions found, either it was not loaded with list_transactions() or there's no transaction in the Monzo account :/")
 
-        most_recent_transaction = self.transactions[-1]
+        transactions_index = -1
+        most_recent_transaction = None
+        while abs(transactions_index) <= len(self.transactions):
+            # Some transactions are not initiated by the user, for example the monthly transaction charging overdraft fees. Because
+            # we can only add receipts to transactions initiated by the user, we need to search from the most recent until such a
+            # transaction is found.
+            if self.transactions[transactions_index]["user_id"] != self._api_client._user_id:
+                transactions_index -= 1
+                continue
+
+            most_recent_transaction = self.transactions[transactions_index]
+            break
+        
+        if most_recent_transaction == None:
+            error("Could not find a transaction initiated by the user, cannot continue.")
+
         print("Using most recent transaction to attach receipt: {}".format(most_recent_transaction))
 
         # Using a random receipt ID we generate as external ID
