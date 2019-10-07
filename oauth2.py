@@ -27,6 +27,7 @@ class OAuth2Client:
     '''
     
     def __init__(self):
+        self._user_id = ""
         self._is_confidential_client = config.MONZO_CLIENT_IS_CONFIDENTIAL
         # Your client should only be confidential if it is a backend application, with
         # OAuth secret hidden from the user.
@@ -104,6 +105,10 @@ class OAuth2Client:
                 if config.MONZO_CLIENT_IS_CONFIDENTIAL:
                     print("Warning: this client is not registered as confidential, we will not be able to refresh token")
     
+            if "user_id" not in response_object:
+                error("Could not retrieve user_id from token exchange response: {}", response_object)
+            self._user_id = response_object["user_id"]
+
 
     def refresh_access_token(self):
         ''' If we are a confidential client, we can refresh the access token to get a new one derived from the same OAuth
